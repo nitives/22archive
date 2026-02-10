@@ -1,0 +1,107 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  TRUSTED
+}
+
+enum SongStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum Platform {
+  SoundCloud
+  YouTube
+  Bandcamp
+  Spotify
+  AppleMusic
+  Other
+}
+
+model Profile {
+  /// This should match Supabase auth.users.id (UUID)
+  userId    String   @id @db.Uuid
+  email     String?  @unique
+  role      Role     @default(TRUSTED)
+  createdAt DateTime @default(now())
+
+  songs Song[] @relation("SongsCreatedBy")
+
+  @@map("profiles")
+}
+
+model Song {
+  id        String     @id @default(uuid()) @db.Uuid
+  title     String
+  artist    String
+  era       String?
+  year      Int?
+
+  coverUrl  String?
+  /// Supabase Storage object key, e.g. "<userId>/<slug>.mp3"
+  audioPath String
+  /// Workflow: trusted users upload -> DRAFT, admin sets PUBLISHED
+  status    SongStatus @default(DRAFT)
+
+  /// Source fields
+  sourceName        String
+  sourceUrl         String
+  sourcePlatform    Platform?
+  sourceDescription String?
+
+  /// Uploader (Profile.userId == Supabase auth user id)
+  createdByUserId String  @db.Uuid
+  createdBy       Profile @relation("SongsCreatedBy", fields: [createdByUserId], references: [userId], onDelete: Restrict)
+
+  /// Producers
+  producers SongProducer[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdByUserId])
+  @@map("songs")
+}
+model Producer {
+  id         String  @id @default(uuid()) @db.Uuid
+  name       String  @unique
+
+  /// socials (optional fields)
+  twitter    String?
+  instagram  String?
+  soundcloud String?
+
+  songs      SongProducer[]
+
+  createdAt DateTime @default(now())
+
+  @@map("producers")
+}
+
+model SongProducer {
+  songId     String   @db.Uuid
+  producerId String   @db.Uuid
+
+  song      Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
+  producer  Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
+
+  @@id([songId, producerId])
+  @@index([producerId])
+  @@map("song_producers")
+}
