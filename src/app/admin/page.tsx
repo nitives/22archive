@@ -21,6 +21,7 @@ import {
   TextArea,
   CheckboxField,
 } from "@/components/admin/forms/controls";
+import { QuickFillSourceButton } from "@/components/admin/quick-fill-source";
 
 export default function AdminPage() {
   const [session, setSession] =
@@ -42,6 +43,7 @@ export default function AdminPage() {
     watch,
     setValue,
     reset,
+    getValues,
   } = useForm<UploadSongFormValues>({
     resolver: zodResolver(uploadSongSchema),
     defaultValues: {
@@ -142,7 +144,7 @@ export default function AdminPage() {
         throw new Error(msg || `Failed: ${res.status}`);
       }
 
-      setStatus("✅ Uploaded and saved!");
+      setStatus("Uploaded and saved!");
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       reset({ publish: true } as any);
       setFile(null);
@@ -156,7 +158,7 @@ export default function AdminPage() {
   if (!session) {
     return (
       <main
-        className={clsx("p-6 max-w-xl mx-auto", "mt-[var(--titlebar-height)]")}
+        className={clsx("p-6 max-w-xl mx-auto", "mt-[var(--titlebar-height)] mb-[var(--controls-height)]")}
       >
         <h1 className="text-xl mb-4">Admin Login</h1>
         <form onSubmit={sendMagicLink} className="flex flex-col gap-3">
@@ -179,7 +181,7 @@ export default function AdminPage() {
 
   return (
     <main
-      className={clsx("p-6 max-w-2xl mx-auto", "mt-[var(--titlebar-height)]")}
+      className={clsx("p-6 max-w-2xl mx-auto", "mt-[var(--titlebar-height)] mb-[var(--controls-height)]")}
     >
       <AdminHeader signOut={signOut} />
 
@@ -190,6 +192,8 @@ export default function AdminPage() {
       <p className="opacity-70 mb-4">
         Slug preview: <code>{slug || "(fill title + artist)"}</code>
       </p>
+
+      <QuickFillSourceButton getValues={getValues} setValue={setValue} />
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
         <FormField label="Title" required error={errors.title?.message}>
@@ -230,7 +234,7 @@ export default function AdminPage() {
           />
         </FormField>
 
-        <hr className="border-white/10 my-2" />
+        <hr className="border-black/20 dark:border-white/10 my-2" />
 
         <FormField
           label="Producers (comma separated)"
@@ -251,9 +255,6 @@ export default function AdminPage() {
 
         <FormField label="Source URL*" error={errors.sourceUrl?.message}>
           <TextInput {...register("sourceUrl")} />
-          {errors.sourceUrl && (
-            <ErrorMessage message={errors.sourceUrl.message} />
-          )}
         </FormField>
 
         <FormField

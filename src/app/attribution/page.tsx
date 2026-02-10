@@ -1,4 +1,3 @@
-// src/app/attribution/page.tsx
 import clsx from "clsx";
 import { APP } from "@/conf/constants";
 import Link from "next/link";

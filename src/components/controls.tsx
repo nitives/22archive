@@ -29,11 +29,11 @@ export const Controls = () => {
   return (
     <div
       className={clsx(
-        "w-full",
+        "w-full max-sm:pb-[calc(env(safe-area-inset-top)+40px)]",
         "fixed bottom-0 left-0 z-50",
         "flex items-center justify-between",
         "border-t border-black/15 dark:border-white/10",
-        "px-2.5 py-2 bg-white/50 dark:bg-black/50 backdrop-blur-sm",
+        "px-2.5 py-2 g-red-500 dark:bg-black",
       )}
     >
       {/* Left: track info */}

@@ -10,6 +10,7 @@
   --touch-hitbox-debug: false;
   /* --- */
   --titlebar-height: 40px;
+  --controls-height: 61px;
 }
 
 @media (prefers-color-scheme: dark) {
