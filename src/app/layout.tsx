@@ -3,6 +3,8 @@ import { Geist_Mono } from "next/font/google";
 import { APP, SEO } from "@/conf/constants";
 import { Titlebar } from "@/components/title-bar";
 import "./globals.css";
+import { AudioProvider } from "@/features/audio/audio-provider";
+import { Controls } from "@/components/controls";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -54,8 +56,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistMono.variable} antialiased`}>
-        <Titlebar />
-        {children}
+        <AudioProvider>
+          <Titlebar />
+          {children}
+          <Controls />
+        </AudioProvider>
       </body>
     </html>
   );

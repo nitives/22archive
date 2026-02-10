@@ -29,5 +29,5 @@
 
 @utility download-touch-hitbox {
   --hitbox-min-w: 80px;
-  --hitbox-min-h: 30px;
+  --hitbox-min-h: 44px;
 }

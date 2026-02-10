@@ -5,10 +5,15 @@ import clsx from "clsx";
 import { AnimatePresence, motion } from "motion/react";
 import { DropdownIcon } from "./icons/dropdown-icon";
 import type { Song as SongType } from "@/songs/types";
-import { AudioPlayer } from "./audio-player";
+import { useAudio } from "@/features/audio/audio-provider";
+import { toTrack } from "@/features/audio/toTrack";
 
 export function Song({ song }: { song: SongType }) {
   const [open, setOpen] = useState(false);
+  const audio = useAudio();
+  const track = toTrack(song);
+  const isCurrent = audio.state.current?.id === song.id;
+  const isPlaying = isCurrent && audio.state.isPlaying;
 
   return (
     <div className="w-full border-t border-black/15 dark:border-white/10">
@@ -49,11 +54,25 @@ export function Song({ song }: { song: SongType }) {
           >
             <div className="px-2 pb-3 pt-2 flex flex-col gap-3">
               {/* Audio */}
-              <div className="flex flex-col gap-2">
-                <AudioPlayer song={song} />
+              <div className="flex gap-2">
+                <button
+                  className={clsx(
+                    "px-1",
+                    "cursor-pointer",
+                    "touch-hitbox",
+                    "bg-black text-white dark:bg-white dark:text-black",
+                  )}
+                  onClick={() => audio.playTrack(track)}
+                >
+                  play
+                </button>
                 <div className="flex items-center gap-3 text-sm">
                   <a
-                    className="underline opacity-80 hover:opacity-100"
+                    className={clsx(
+                      "underline",
+                      "download-touch-hitbox touch-hitbox",
+                      "opacity-80 hover:opacity-100",
+                    )}
                     href={`/api/media/download/${song.id}`}
                   >
                     Download
@@ -74,18 +93,21 @@ export function Song({ song }: { song: SongType }) {
                   <span className="opacity-60">Source:</span>{" "}
                   <a
                     className="underline"
-                    href={song.source.url}
+                    href={song.source?.url}
                     target="_blank"
                     rel="noreferrer"
                   >
-                    {song.source.name}
+                    {song.source?.name}
                   </a>
-                  {song.source.platform ? (
-                    <span className="opacity-60"> ({song.source.platform})</span>
+                  {song.source?.platform ? (
+                    <span className="opacity-60">
+                      {" "}
+                      ({song.source.platform})
+                    </span>
                   ) : null}
                 </div>
 
-                {song.source.description ? (
+                {song.source?.description ? (
                   <div className="opacity-70">{song.source.description}</div>
                 ) : null}
               </div>

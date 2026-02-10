@@ -32,18 +32,19 @@ export async function getPublishedSongs() {
     },
   });
 
-  // Map to your UI type shape (no Dates, no Prisma objects)
+  // map to UI type shape (no Dates, no Prisma objects)
   return rows.map((s) => ({
     id: s.id,
     title: s.title,
     artist: s.artist,
-    era: s.era ?? "",
-    year: s.year ?? 0,
+    era: s.era ?? undefined,
+    year: s.year ?? undefined,
     coverUrl: s.coverUrl ?? "",
     status: "published" as const,
     source: {
       name: s.sourceName,
       url: s.sourceUrl,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       platform: (s.sourcePlatform ?? undefined) as any, // you can tighten later
       description: s.sourceDescription ?? undefined,
     },

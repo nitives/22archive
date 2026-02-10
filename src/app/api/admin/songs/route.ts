@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
 
     const userId = data.user.id; // UUID
 
-    // Must be ADMIN in your Prisma 'profiles' table
+    // Must be ADMIN
     const profile = await prisma.profile.findUnique({ where: { userId } });
     if (!profile || profile.role !== "ADMIN") {
       return new Response("Forbidden (admin only)", { status: 403 });

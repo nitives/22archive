@@ -2,11 +2,11 @@ export type Song = {
   id: string;
   title: string;
   artist: string;
-  producer: Producer[];
-  era: string;
-  year: number;
-  coverUrl: string;
-  source: Source;
+  producer?: Producer[];
+  era?: string;
+  year?: number;
+  coverUrl?: string;
+  source?: Source;
   status: "draft" | "published" | "archived";
 };
 
@@ -27,7 +27,7 @@ export type Source = {
     | "YouTube"
     | "Bandcamp"
     | "Spotify"
-    | "Apple Music"
+    | "AppleMusic"
     | "Other";
   description?: string;
 };
