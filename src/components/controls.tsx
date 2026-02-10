@@ -1,7 +1,8 @@
 "use client";
 import { useAudio } from "@/features/audio/audio-provider";
 import clsx from "clsx";
-import { useMemo } from "react";
+import { CSSProperties, useMemo } from "react";
+import { ImPause2, ImPlay2, ImPlay3 } from "react-icons/im";
 
 function fmtTime(sec: number) {
   if (!Number.isFinite(sec) || sec < 0) return "--:--";
@@ -21,6 +22,10 @@ export const Controls = () => {
 
   const disabled = !current;
 
+  const value = Math.min(currentTime, duration || 0);
+  const max = duration || 0;
+  const pct = max > 0 ? (value / max) * 100 : 0;
+
   return (
     <div
       className={clsx(
@@ -32,46 +37,71 @@ export const Controls = () => {
       )}
     >
       {/* Left: track info */}
-      <div className="min-w-0 flex flex-col">
-        <div className="truncate text-sm">
-          {current ? (
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <span className="opacity-80">{current.title}</span>
-                <span className="opacity-50"> — {current.artist}</span>
+      <div className="min-w-0 flex gap-2">
+        <div className="min-w-0 flex flex-col">
+          <div className="truncate text-sm">
+            {current ? (
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <span className="opacity-80">{current.title}</span>
+                  <span className="opacity-50"> — {current.artist}</span>
+                </div>
+                {/* <div>
+                  <button
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => audio.toggle()}
+                    className={clsx(
+                      "px-1",
+                      "cursor-pointer",
+                      "sm:hidden block",
+                      "border border-black/25 dark:border-white/25",
+                      "disabled:opacity-50",
+                    )}
+                  >
+                    {isPlaying ? "Pause" : "Play"}
+                  </button>
+                </div> */}
               </div>
-              <div>
-                <button
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => audio.toggle()}
-                  className={clsx(
-                    "px-1",
-                    "sm:hidden block",
-                    "border border-black/25 dark:border-white/25",
-                    "disabled:opacity-50",
-                  )}
-                >
-                  {isPlaying ? "Pause" : "Play"}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <span className="opacity-60">--</span>
-          )}
-        </div>
+            ) : (
+              <span className="opacity-60">--</span>
+            )}
+          </div>
 
-        {/* progress bar */}
-        <input
-          className={clsx("w-[240px] max-w-[60vw]", disabled && "opacity-40")}
-          type="range"
-          min={0}
-          max={duration || 0}
-          step={0.25}
-          value={Math.min(currentTime, duration || 0)}
-          disabled={disabled || !duration}
-          onChange={(e) => audio.seek(Number(e.target.value))}
-        />
+          {/* progress bar */}
+          <input
+            className={clsx(
+              "range range--progress",
+              "w-[240px] max-w-[60vw]",
+              disabled && "opacity-40",
+            )}
+            type="range"
+            min={0}
+            max={duration || 0}
+            step={0.25}
+            value={Math.min(currentTime, duration || 0)}
+            disabled={disabled || !duration}
+            onChange={(e) => audio.seek(Number(e.target.value))}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            style={{ ["--range-pct" as any]: `${pct}%` }}
+          />
+        </div>
+        <div className="sm:hidden flex justify-center size-[44px] ">
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => audio.toggle()}
+            className={clsx(
+              "p-1",
+              "text-[#4c4c4c]",
+              "cursor-pointer",
+              "touch-hitbox",
+              "disabled:opacity-50",
+            )}
+          >
+            {isPlaying ? <ImPause2 size={24} /> : <ImPlay3 size={24} />}
+          </button>
+        </div>
       </div>
 
       {/* Right: controls + time */}
@@ -86,6 +116,7 @@ export const Controls = () => {
           onClick={() => audio.toggle()}
           className={clsx(
             "px-3 py-1",
+            "cursor-pointer",
             "max-sm:hidden block",
             "border border-black/25 dark:border-white/25",
             "disabled:opacity-50",

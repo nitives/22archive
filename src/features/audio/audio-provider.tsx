@@ -140,7 +140,7 @@ function reducer(state: State, action: Action): State {
       const lastIndex = state.order.length - 1;
       // if we're already at the end, stop playback
       if (state.index >= lastIndex) {
-        return { ...state, isPlaying: false };
+        return { ...state, isPlaying: false, currentTime: 0 };
       }
       const nextIndex = state.index + 1;
       const current = state.queue[state.order[nextIndex]];
@@ -264,6 +264,78 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       audio.removeEventListener("durationchange", onLoaded);
     };
   }, []);
+
+  // Media session API
+  useEffect(() => {
+    // Media Session API isn't supported everywhere
+    if (typeof navigator === "undefined") return;
+    if (!("mediaSession" in navigator)) return;
+
+    const track = state.current;
+
+    if (!track) {
+      navigator.mediaSession.metadata = null;
+      return;
+    }
+
+    // Build artwork array (best effort)
+    const artwork = track.coverUrl
+      ? [
+          {
+            src: new URL(track.coverUrl, window.location.href).toString(),
+            sizes: "512x512",
+            type: "image/png",
+          },
+        ]
+      : undefined;
+
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: track.title,
+      artist: track.artist,
+      album: track.album ?? "",
+      artwork,
+    });
+
+    // Hook platform controls -> your player actions
+    // (These are standard actions the OS/browser may show.) :contentReference[oaicite:1]{index=1}
+    navigator.mediaSession.setActionHandler("play", () => {
+      dispatch({ type: "SET_PLAYING", isPlaying: true });
+    });
+
+    navigator.mediaSession.setActionHandler("pause", () => {
+      dispatch({ type: "SET_PLAYING", isPlaying: false });
+    });
+
+    navigator.mediaSession.setActionHandler("previoustrack", () => {
+      dispatch({ type: "PREV" });
+    });
+
+    navigator.mediaSession.setActionHandler("nexttrack", () => {
+      dispatch({ type: "NEXT" });
+    });
+
+    // Optional: seek support (lockscreen scrubber / media UI)
+    navigator.mediaSession.setActionHandler("seekto", (details) => {
+      const audio = audioRef.current;
+      if (!audio) return;
+      if (typeof details.seekTime !== "number") return;
+      audio.currentTime = details.seekTime;
+      dispatch({ type: "TIME", currentTime: details.seekTime });
+    });
+
+    return () => {
+      // Clean handlers when track changes
+      try {
+        navigator.mediaSession.setActionHandler("play", null);
+        navigator.mediaSession.setActionHandler("pause", null);
+        navigator.mediaSession.setActionHandler("previoustrack", null);
+        navigator.mediaSession.setActionHandler("nexttrack", null);
+        navigator.mediaSession.setActionHandler("seekto", null);
+      } catch {
+        // some browsers throw if you null unsupported handlers
+      }
+    };
+  }, [state.current?.id]);
 
   const api: Api = useMemo(
     () => ({

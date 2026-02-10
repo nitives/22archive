@@ -3,8 +3,9 @@ export const APP = {
   DESCRIPTION: "an unofficial 2hollis archive.",
   AUTHOR: {
     NAME: "nitves",
-    GITHUB: "",
-    TWITTER: "",
+    GITHUB: "nitives",
+    TWITTER: "@nitives",
+    EMAIL: "nite@superlist.cc",
   },
 };
 

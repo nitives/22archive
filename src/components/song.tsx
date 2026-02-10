@@ -31,12 +31,14 @@ export function Song({ song }: { song: SongType }) {
       >
         <div className="flex items-center gap-2">
           <DropdownIcon active={open} />
-          <span>{song.title}</span>
-          <span className="opacity-60">— {song.artist}</span>
+          <p className="line-clamp-1">
+            {song.title} <span className="opacity-60">— {song.artist}</span>
+          </p>
         </div>
 
         <div className="text-xs opacity-60 flex items-center gap-2">
           {song.year ? <span>{song.year}</span> : null}
+          {song.year && song.era ? <span>|</span> : null}
           {song.era ? <span>{song.era}</span> : null}
         </div>
       </button>
@@ -82,6 +84,12 @@ export function Song({ song }: { song: SongType }) {
 
               {/* Metadata */}
               <div className="text-sm flex flex-col gap-1">
+                <div className="opacity-80">
+                  <span className="opacity-60">Title:</span> {song.title}
+                </div>
+                <div className="opacity-80">
+                  <span className="opacity-60">Artist:</span> {song.artist}
+                </div>
                 <div className="opacity-80">
                   <span className="opacity-60">Producers:</span>{" "}
                   {song.producer?.length

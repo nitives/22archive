@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "../styles/utilities.css";
+@import "../styles/range.css";
 
 :root {
   --background: #ffffff;
