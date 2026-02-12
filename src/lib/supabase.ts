@@ -1,10 +1,11 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
-import { env, requireEnv } from "@/conf/env";
+// import { env, requireEnv } from "@/conf/env";
+import { requireServerEnv, serverEnv } from "@/conf/env/server";
 
-const url = requireEnv(env.supabaseUrl, "SUPABASE_URL");
-const serviceKey = requireEnv(
-  env.supabaseServiceRoleKey,
+const url = requireServerEnv(serverEnv.supabaseUrl, "SUPABASE_URL");
+const serviceKey = requireServerEnv(
+  serverEnv.supabaseServiceRoleKey,
   "SUPABASE_SERVICE_ROLE_KEY",
 );
 

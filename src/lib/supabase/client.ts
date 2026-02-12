@@ -1,9 +1,9 @@
 import { createBrowserClient } from "@supabase/ssr";
-import { env, requireEnv } from "@/conf/env";
+import { publicEnv } from "@/conf/env/public";
 
 export function supabaseBrowser() {
   return createBrowserClient(
-    requireEnv(env.supabaseUrl, "SUPABASE_URL"),
-    requireEnv(env.supabasePublishableKey, "SUPABASE_PUBLISHABLE_KEY"),
+    publicEnv.supabaseUrl,
+    publicEnv.supabasePublishableKey,
   );
 }
