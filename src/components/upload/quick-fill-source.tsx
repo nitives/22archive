@@ -88,8 +88,7 @@ export function QuickFillSourceButton({
     }
 
     if (!curPlatform && data.sourcePlatform) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      setValue("sourcePlatform", data.sourcePlatform as any, {
+      setValue("sourcePlatform", data.sourcePlatform, {
         shouldValidate: true,
         shouldDirty: true,
       });

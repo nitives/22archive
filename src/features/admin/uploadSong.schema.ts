@@ -1,13 +1,5 @@
 import { z } from "zod";
-
-export const platformEnum = z.enum([
-  "SoundCloud",
-  "YouTube",
-  "Bandcamp",
-  "Spotify",
-  "AppleMusic",
-  "Other",
-]);
+import { platformEnum } from "@/conf/schemas";
 
 export const uploadSongSchema = z.object({
   title: z.string().min(1, "Title is required"),

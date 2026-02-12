@@ -1,10 +1,10 @@
 import { NextRequest } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { prisma } from "@/lib/prisma";
+import { STORAGE } from "@/conf/storage";
+import { songIdParamsSchema } from "@/conf/schemas";
 
 export const runtime = "nodejs";
-
-const BUCKET = "tracks";
 
 function safeFilename(name: string) {
   return name
@@ -18,9 +18,14 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const { id } = await params;
+  const parsedParams = songIdParamsSchema.safeParse(await params);
+  if (!parsedParams.success) {
+    return new Response(JSON.stringify(parsedParams.error.issues, null, 2), {
+      status: 400,
+    });
+  }
 
-  if (!id) return new Response("Missing id", { status: 400 });
+  const { id } = parsedParams.data;
 
   const song = await prisma.song.findUnique({
     where: { id },
@@ -32,7 +37,7 @@ export async function GET(
     return new Response("Not available", { status: 403 });
 
   const { data: signed, error: signErr } = await supabaseAdmin.storage
-    .from(BUCKET)
+    .from(STORAGE.TRACKS_BUCKET)
     .createSignedUrl(song.audioPath, 60);
 
   if (signErr || !signed?.signedUrl)

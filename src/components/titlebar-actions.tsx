@@ -95,7 +95,9 @@ export function TitlebarActions({ links }: { links?: ActionLink[] }) {
             transition={{ duration: 0.18, ease: "easeInOut" }}
           >
             {/* backdrop */}
-            <div
+            <button
+              type="button"
+              aria-label="Close menu"
               className="absolute inset-0 bg-black/40"
               onClick={() => setOpen(false)}
             />

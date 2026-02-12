@@ -1,11 +1,12 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
+import { env, requireEnv } from "@/conf/env";
 
-const url = process.env.SUPABASE_URL;
-const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!url) throw new Error("Missing SUPABASE_URL");
-if (!serviceKey) throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY");
+const url = requireEnv(env.supabaseUrl, "SUPABASE_URL");
+const serviceKey = requireEnv(
+  env.supabaseServiceRoleKey,
+  "SUPABASE_SERVICE_ROLE_KEY",
+);
 
 export const supabaseAdmin = createClient(url, serviceKey, {
   auth: { persistSession: false },

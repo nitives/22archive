@@ -182,6 +182,8 @@ const initialState: State = {
 export function AudioProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const current = state.current;
+  const isPlaying = state.isPlaying;
 
   // Keep the audio element in sync when current changes
   useEffect(() => {
@@ -189,7 +191,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     if (!audio) return;
 
     // No current track
-    if (!state.current?.streamUrl) {
+    if (!current?.streamUrl) {
       dispatch({ type: "RESET_TIME" });
       audio.pause();
       audio.removeAttribute("src");
@@ -198,7 +200,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     }
 
     const desired = new URL(
-      state.current.streamUrl,
+      current.streamUrl,
       window.location.href,
     ).toString();
 
@@ -212,7 +214,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       audio.load();
     }
 
-    if (state.isPlaying) {
+    if (isPlaying) {
       void audio.play().catch(() => {
         // autoplay can be blocked / play can fail
         dispatch({ type: "SET_PLAYING", isPlaying: false });
@@ -220,22 +222,22 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     } else {
       audio.pause();
     }
-  }, [state.current?.id, state.isPlaying]);
+  }, [current?.streamUrl, isPlaying]);
 
   // Play/pause when isPlaying flips
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (!state.current) return;
+    if (!current) return;
 
-    if (state.isPlaying) {
+    if (isPlaying) {
       void audio
         .play()
         .catch(() => dispatch({ type: "SET_PLAYING", isPlaying: false }));
     } else {
       audio.pause();
     }
-  }, [state.isPlaying, state.current?.id]);
+  }, [isPlaying, current]);
 
   // Wire audio element events -> state
   useEffect(() => {
@@ -271,7 +273,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     if (typeof navigator === "undefined") return;
     if (!("mediaSession" in navigator)) return;
 
-    const track = state.current;
+    const track = current;
 
     if (!track) {
       navigator.mediaSession.metadata = null;
@@ -335,7 +337,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         // some browsers throw if you null unsupported handlers
       }
     };
-  }, [state.current?.id]);
+  }, [current]);
 
   const api: Api = useMemo(
     () => ({

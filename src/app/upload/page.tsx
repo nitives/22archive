@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { supabaseBrowser } from "@/lib/supabase/client";
 
 import { slugify } from "@/lib/strings";
@@ -18,7 +19,26 @@ import { TextInput } from "@/components/upload/forms/controls";
 import { QuickFillSourceButton } from "@/components/upload/quick-fill-source";
 import { Spinner } from "@/components/spinner";
 
-type Me = { role: "ADMIN" | "TRUSTED" | "PENDING"; email: string | null };
+const meSchema = z.object({
+  role: z.enum(["ADMIN", "TRUSTED", "PENDING"]),
+  email: z.string().nullable(),
+});
+
+type Me = z.infer<typeof meSchema>;
+
+const uploadDefaultValues: UploadSongFormValues = {
+  title: "",
+  artist: "2hollis",
+  era: "",
+  year: undefined,
+  coverUrl: "",
+  sourceName: "",
+  sourceUrl: "",
+  sourcePlatform: undefined,
+  sourceDescription: "",
+  producers: "",
+  publish: false, // ignored anyway
+};
 
 export default function UploadPage() {
   const [session, setSession] =
@@ -48,24 +68,14 @@ export default function UploadPage() {
     getValues,
   } = useForm<UploadSongFormValues>({
     resolver: zodResolver(uploadSongSchema),
-    defaultValues: {
-      title: "",
-      artist: "2hollis",
-      era: "",
-      year: undefined,
-      coverUrl: "",
-      sourceName: "",
-      sourceUrl: "",
-      sourcePlatform: undefined,
-      sourceDescription: "",
-      producers: "",
-      publish: false, // ignored anyway
-    },
+    defaultValues: uploadDefaultValues,
   });
 
+  const watchedArtist = watch("artist");
+  const watchedTitle = watch("title");
   const slug = useMemo(
-    () => slugify(`${watch("artist")}-${watch("title")}`),
-    [watch("artist"), watch("title")],
+    () => slugify(`${watchedArtist}-${watchedTitle}`),
+    [watchedArtist, watchedTitle],
   );
 
   useEffect(() => {
@@ -74,7 +84,7 @@ export default function UploadPage() {
       setSession(sess),
     );
     return () => sub.subscription.unsubscribe();
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     async function loadMe() {
@@ -86,8 +96,12 @@ export default function UploadPage() {
         setMe(null);
         return;
       }
-      const json = (await res.json()) as Me;
-      setMe(json);
+      const parsed = meSchema.safeParse(await res.json());
+      if (!parsed.success) {
+        setMe(null);
+        return;
+      }
+      setMe(parsed.data);
     }
     void loadMe();
   }, [session?.access_token]);
@@ -159,8 +173,7 @@ export default function UploadPage() {
       }
 
       setStatus("Uploaded for review (draft).");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      reset({ artist: "2hollis" } as any);
+      reset(uploadDefaultValues);
       setFile(null);
     } catch (err: unknown) {
       setStatus(err instanceof Error ? err.message : "Something went wrong");

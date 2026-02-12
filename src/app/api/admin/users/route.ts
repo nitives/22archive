@@ -5,7 +5,7 @@ import { requireRole } from "@/lib/require-role";
 export const runtime = "nodejs";
 
 export async function GET(req: NextRequest) {
-    const gate = await requireRole(req, ["ADMIN"]);
+  const gate = await requireRole(req, ["ADMIN"]);
   if (!gate.ok) return gate.res;
 
   const users = await prisma.profile.findMany({

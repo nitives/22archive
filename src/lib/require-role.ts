@@ -1,8 +1,9 @@
 import { supabaseAdmin } from "@/lib/supabase";
 import { prisma } from "@/lib/prisma";
 import type { NextRequest } from "next/server";
+import { Role as RoleEnum, type Role } from "@/generated/prisma/enums";
 
-export type AppRole = "ADMIN" | "TRUSTED" | "PENDING";
+export type AppRole = Role;
 
 function getBearerToken(req: NextRequest) {
   const auth = req.headers.get("authorization");
@@ -27,14 +28,25 @@ export async function requireRole(req: NextRequest, allowed: AppRole[]) {
   }
 
   const userId = data.user.id;
+  const email = data.user.email ?? null;
 
-  const profile = await prisma.profile.findUnique({
+  // Ensure the user always has a profile row in DB.
+  // NOTE: DB enum "Role" must include PENDING (see Supabase SQL fix).
+  const profile = await prisma.profile.upsert({
     where: { userId },
+    create: {
+      userId,
+      email,
+      role: RoleEnum.PENDING,
+    },
+    update: {
+      // keep email synced; do NOT mutate role here
+      email,
+    },
     select: { role: true, email: true },
   });
 
-  // If they have no profile yet, treat as PENDING (or create one elsewhere)
-  const role = (profile?.role ?? "PENDING") as AppRole;
+  const role: AppRole = profile.role;
 
   if (!allowed.includes(role)) {
     return {
@@ -47,14 +59,14 @@ export async function requireRole(req: NextRequest, allowed: AppRole[]) {
     ok: true as const,
     userId,
     role,
-    email: profile?.email ?? data.user.email ?? null,
+    email: profile.email ?? email,
   };
 }
 
 export function requireAdmin(req: NextRequest) {
-  return requireRole(req, ["ADMIN"]);
+  return requireRole(req, [RoleEnum.ADMIN]);
 }
 
 export function requireTrusted(req: NextRequest) {
-  return requireRole(req, ["ADMIN", "TRUSTED"]);
+  return requireRole(req, [RoleEnum.ADMIN, RoleEnum.TRUSTED]);
 }

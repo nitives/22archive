@@ -3,36 +3,9 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { SongStatus } from "@/generated/prisma/enums";
 import { requireRole } from "@/lib/require-role";
+import { adminUploadBodySchema } from "@/conf/schemas";
 
 export const runtime = "nodejs";
-
-const platformEnum = z.enum([
-  "SoundCloud",
-  "YouTube",
-  "Bandcamp",
-  "Spotify",
-  "AppleMusic",
-  "Other",
-]);
-
-const bodySchema = z.object({
-  title: z.string().min(1),
-  artist: z.string().min(1),
-  era: z.string().nullable().optional(),
-  year: z.number().int().min(1900).max(2100).nullable().optional(),
-  coverUrl: z.string().url().nullable().optional(),
-
-  audioPath: z.string().min(1),
-
-  sourceName: z.string().min(1),
-  sourceUrl: z.string().url(),
-  sourcePlatform: platformEnum.nullable().optional(),
-  sourceDescription: z.string().nullable().optional(),
-
-  producers: z.array(z.string().min(1)).default([]),
-
-  publish: z.boolean().default(false),
-});
 
 export async function POST(req: NextRequest) {
   try {
@@ -40,7 +13,7 @@ export async function POST(req: NextRequest) {
     if (!gate.ok) return gate.res;
 
     const json = await req.json();
-    const parsed = bodySchema.parse({
+    const parsed = adminUploadBodySchema.parse({
       ...json,
       // ensure optional fields are null when empty
       era: json.era ?? null,

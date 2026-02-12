@@ -2,11 +2,12 @@ import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { requireRole } from "@/lib/require-role";
+import { roleEnum, userIdParamsSchema } from "@/conf/schemas";
 
 export const runtime = "nodejs";
 
 const bodySchema = z.object({
-  role: z.enum(["ADMIN", "TRUSTED", "PENDING"]),
+  role: roleEnum,
 });
 
 export async function PATCH(
@@ -16,8 +17,14 @@ export async function PATCH(
   const gate = await requireRole(req, ["ADMIN"]);
   if (!gate.ok) return gate.res;
 
-  const { userId } = await params;
-  if (!userId) return new Response("Missing userId", { status: 400 });
+  const parsedParams = userIdParamsSchema.safeParse(await params);
+  if (!parsedParams.success) {
+    return new Response(JSON.stringify(parsedParams.error.issues, null, 2), {
+      status: 400,
+    });
+  }
+
+  const { userId } = parsedParams.data;
 
   // Optional safety: prevent admin from demoting themselves by accident
   if (userId === gate.userId) {

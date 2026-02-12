@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
+import type { Song } from "@/songs/types";
 
-export async function getPublishedSongs() {
+export async function getPublishedSongs(): Promise<Song[]> {
   const rows = await prisma.song.findMany({
     where: { status: "PUBLISHED" },
     orderBy: [{ year: "desc" }, { createdAt: "desc" }],
@@ -44,8 +45,7 @@ export async function getPublishedSongs() {
     source: {
       name: s.sourceName,
       url: s.sourceUrl,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      platform: (s.sourcePlatform ?? undefined) as any, // you can tighten later
+      platform: s.sourcePlatform ?? undefined,
       description: s.sourceDescription ?? undefined,
     },
     producer: s.producers.map((p) => ({

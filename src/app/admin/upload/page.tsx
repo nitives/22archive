@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { supabaseBrowser } from "@/lib/supabase/client";
 
 import { AdminHeader } from "@/components/upload/header";
@@ -18,7 +19,26 @@ import { ErrorMessage, FormField } from "@/components/upload/forms/form-field";
 import { TextInput, CheckboxField } from "@/components/upload/forms/controls";
 import { QuickFillSourceButton } from "@/components/upload/quick-fill-source";
 
-type Me = { role: "ADMIN" | "TRUSTED" | "PENDING"; email: string | null };
+const meSchema = z.object({
+  role: z.enum(["ADMIN", "TRUSTED", "PENDING"]),
+  email: z.string().nullable(),
+});
+
+type Me = z.infer<typeof meSchema>;
+
+const uploadDefaultValues: UploadSongFormValues = {
+  title: "",
+  artist: "",
+  era: "",
+  year: undefined,
+  coverUrl: "",
+  sourceName: "",
+  sourceUrl: "",
+  sourcePlatform: undefined,
+  sourceDescription: "",
+  producers: "",
+  publish: true,
+};
 
 export default function AdminUploadPage() {
   const [session, setSession] =
@@ -45,24 +65,14 @@ export default function AdminUploadPage() {
     getValues,
   } = useForm<UploadSongFormValues>({
     resolver: zodResolver(uploadSongSchema),
-    defaultValues: {
-      title: "",
-      artist: "",
-      era: "",
-      year: undefined,
-      coverUrl: "",
-      sourceName: "",
-      sourceUrl: "",
-      sourcePlatform: undefined,
-      sourceDescription: "",
-      producers: "",
-      publish: true,
-    },
+    defaultValues: uploadDefaultValues,
   });
 
+  const watchedArtist = watch("artist");
+  const watchedTitle = watch("title");
   const slug = useMemo(
-    () => slugify(`${watch("artist")}-${watch("title")}`),
-    [watch("artist"), watch("title")],
+    () => slugify(`${watchedArtist}-${watchedTitle}`),
+    [watchedArtist, watchedTitle],
   );
 
   useEffect(() => {
@@ -71,7 +81,7 @@ export default function AdminUploadPage() {
       setSession(sess),
     );
     return () => sub.subscription.unsubscribe();
-  }, []);
+  }, [supabase]);
 
   useEffect(() => {
     async function loadMe() {
@@ -80,8 +90,9 @@ export default function AdminUploadPage() {
         headers: { authorization: `Bearer ${session.access_token}` },
       });
       if (!res.ok) return setMe(null);
-      const json = (await res.json()) as Me;
-      setMe(json);
+      const parsed = meSchema.safeParse(await res.json());
+      if (!parsed.success) return setMe(null);
+      setMe(parsed.data);
     }
     void loadMe();
   }, [session?.access_token]);
@@ -150,8 +161,7 @@ export default function AdminUploadPage() {
       }
 
       setStatus("Uploaded and saved!");
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      reset({ publish: true } as any);
+      reset(uploadDefaultValues);
       setFile(null);
     } catch (err: unknown) {
       setStatus(err instanceof Error ? err.message : "Something went wrong");

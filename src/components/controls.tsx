@@ -1,6 +1,7 @@
 "use client";
 import { useAudio } from "@/features/audio/audio-provider";
 import clsx from "clsx";
+import type { CSSProperties } from "react";
 // import { useMemo } from "react";
 import { ImPause2, ImPlay3 } from "react-icons/im";
 
@@ -25,6 +26,9 @@ export const Controls = () => {
   const value = Math.min(currentTime, duration || 0);
   const max = duration || 0;
   const pct = max > 0 ? (value / max) * 100 : 0;
+  const rangeStyle: CSSProperties & Record<"--range-pct", string> = {
+    "--range-pct": `${pct}%`,
+  };
 
   // Only show Controls on main page
   if (typeof window !== "undefined" && window.location.pathname !== "/") {
@@ -38,7 +42,7 @@ export const Controls = () => {
         "fixed bottom-0 left-0 z-50",
         "flex items-center justify-between",
         "border-t border-black/15 dark:border-white/10",
-        "px-2.5 py-2 g-red-500 dark:bg-black",
+        "px-2.5 py-2 dark:bg-black",
       )}
     >
       {/* Left: track info */}
@@ -87,8 +91,7 @@ export const Controls = () => {
             value={Math.min(currentTime, duration || 0)}
             disabled={disabled || !duration}
             onChange={(e) => audio.seek(Number(e.target.value))}
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            style={{ ["--range-pct" as any]: `${pct}%` }}
+            style={rangeStyle}
           />
         </div>
         <div className="sm:hidden flex justify-center size-[44px] ">

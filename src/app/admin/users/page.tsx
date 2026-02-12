@@ -1,19 +1,27 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { buttonStyle, inputStyle } from "@/styles/forms";
 import Link from "next/link";
+import { z } from "zod";
+import { roleEnum } from "@/conf/schemas";
 
-type Role = "ADMIN" | "TRUSTED" | "PENDING";
+type Role = z.infer<typeof roleEnum>;
 
-type ProfileRow = {
-  userId: string;
-  email: string | null;
-  role: Role;
-  createdAt: string;
-};
+const profileRowSchema = z.object({
+  userId: z.string().uuid(),
+  email: z.string().nullable(),
+  role: roleEnum,
+  createdAt: z.string(),
+});
+
+const usersResponseSchema = z.object({
+  users: z.array(profileRowSchema),
+});
+
+type ProfileRow = z.infer<typeof profileRowSchema>;
 
 function fmtDate(iso: string) {
   try {
@@ -57,7 +65,7 @@ export default function AdminUsersPage() {
       setSession(sess);
     });
     return () => sub.subscription.unsubscribe();
-  }, []);
+  }, [supabase]);
 
   async function sendMagicLink(e: React.FormEvent) {
     e.preventDefault();
@@ -74,7 +82,7 @@ export default function AdminUsersPage() {
     await supabase.auth.signOut();
   }
 
-  async function refresh() {
+  const refresh = useCallback(async () => {
     if (!session) return;
     setStatus("");
     setLoading(true);
@@ -89,14 +97,15 @@ export default function AdminUsersPage() {
         throw new Error(msg || `Failed: ${res.status}`);
       }
 
-      const json = (await res.json()) as { users: ProfileRow[] };
-      setUsers(json.users || []);
+      const parsed = usersResponseSchema.safeParse(await res.json());
+      if (!parsed.success) throw new Error("Invalid response payload");
+      setUsers(parsed.data.users);
     } catch (err: unknown) {
       setStatus(err instanceof Error ? err.message : "Failed to load users");
     } finally {
       setLoading(false);
     }
-  }
+  }, [session]);
 
   async function setRole(userId: string, role: "TRUSTED" | "PENDING") {
     if (!session) return;
@@ -128,7 +137,7 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     if (session) void refresh();
-  }, [session?.user?.id]);
+  }, [refresh, session]);
 
   const counts = useMemo(() => {
     const c: Record<Role, number> = { ADMIN: 0, TRUSTED: 0, PENDING: 0 };
@@ -229,7 +238,7 @@ export default function AdminUsersPage() {
                 onClick={() => setRole(u.userId, "TRUSTED")}
                 title="Allow this user to submit uploads (drafts)"
               >
-                Promote → TRUSTED
+                Promote {"->"} TRUSTED
               </button>
 
               <button
@@ -239,7 +248,7 @@ export default function AdminUsersPage() {
                 onClick={() => setRole(u.userId, "PENDING")}
                 title="Remove trusted ability (keep account)"
               >
-                Demote → PENDING
+                Demote {"->"} PENDING
               </button>
 
               {u.role === "ADMIN" ? (

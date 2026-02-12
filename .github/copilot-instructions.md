@@ -5,6 +5,15 @@ Copilot should follow these rules when generating or editing code in this repo.
 
 ---
 
+## Project description
+
+(This may be empty if so, continue to the prime directive and stack assumptions below, and if needed, ask for more info about the project before making large code changes or refactors.)
+
+This is a web app to archive 2hollis unreleased music and make it available to fans to listen and understand the history of the the songs, users can listen and download the songs, see info about each song e.g 'this song was recorded while 2hollis was in Paris for 2025 Paris Fashion week'.
+The app also allows trusted users to contribute by uploading new songs, adding info about the songs, and editing existing info. The app has a public-facing side for fans and a protected admin side for trusted contributors.
+
+---
+
 ## Prime directive
 
 - Produce **production-ready, type-safe, accessible, secure** code.
@@ -52,6 +61,7 @@ Each feature lives in `src/features/<feature>/` and should follow this template:
 - `src/features/<feature>/index.ts` (optional) — public exports for clean imports
 
 Rules:
+
 - Components import **hooks/wrappers**, not raw fetchers.
 - Server Actions live in `actions.ts` (or `actions/*` if large).
 - Keep browser-only code out of server modules and DB code.
@@ -85,11 +95,13 @@ Rules:
 ### Mutations & API style (use best judgment)
 
 Use **Server Actions** for:
+
 - Create/Update/Delete mutations
 - Form submissions
 - In-repo mutations where HTTP is not required
 
 Use **Route Handlers (`route.ts`)** for:
+
 - Streaming responses (AI / LLM / SSE / Web Streams)
 - Webhooks
 - Custom headers, cookies, redirects, status codes, CORS control
@@ -173,6 +185,7 @@ className={clsx(
 ### Environment variables
 
 Rules:
+
 - **Hard rule:** Never read `process.env` outside `src/conf/env.ts`.
 - Provide Vercel-friendly fallback behavior:
   - prefer `NEXT_PUBLIC_*` in the browser
@@ -223,6 +236,7 @@ export function requireEnv(value: string, name: EnvKey): string {
 - Parse early, return typed values.
 
 Example convention:
+
 - `src/conf/schemas.ts` exports Zod schemas
 - Feature code imports schemas and uses `schema.parse(...)` at the boundary
 
@@ -234,12 +248,14 @@ Example convention:
 - No DB client creation inside React components.
 
 Suggested files:
+
 - `src/lib/db/prisma.ts` — Prisma singleton
 - `src/lib/db/supabase/server.ts` — server supabase client
 - `src/lib/db/supabase/browser.ts` — browser supabase client (NEXT_PUBLIC keys only)
 - `src/lib/db/index.ts` — re-exports
 
 Rules:
+
 - Server code can use `requireEnv(...)` to fail fast.
 - Client code must never rely on non-public env vars.
 
@@ -254,6 +270,7 @@ Rules:
 - Components import hooks, not the raw fetcher.
 
 Example conventions:
+
 - `getTrack(trackId)` fetcher
 - `useTrackQuery(trackId)` hook (internally calls `useQuery`)
 
