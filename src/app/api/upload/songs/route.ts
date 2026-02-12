@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { requireTrusted } from "@/lib/require-role";
 import { SongStatus } from "@/generated/prisma/enums";
-import { requireRole } from "@/lib/require-role";
 
 export const runtime = "nodejs";
 
@@ -21,7 +21,6 @@ const bodySchema = z.object({
   era: z.string().nullable().optional(),
   year: z.number().int().min(1900).max(2100).nullable().optional(),
   coverUrl: z.string().url().nullable().optional(),
-
   audioPath: z.string().min(1),
 
   sourceName: z.string().min(1),
@@ -30,19 +29,16 @@ const bodySchema = z.object({
   sourceDescription: z.string().nullable().optional(),
 
   producers: z.array(z.string().min(1)).default([]),
-
-  publish: z.boolean().default(false),
 });
 
 export async function POST(req: NextRequest) {
-  try {
-    const gate = await requireRole(req, ["ADMIN"]);
-    if (!gate.ok) return gate.res;
+  const gate = await requireTrusted(req);
+  if (!gate.ok) return gate.res;
 
+  try {
     const json = await req.json();
     const parsed = bodySchema.parse({
       ...json,
-      // ensure optional fields are null when empty
       era: json.era ?? null,
       year: json.year ?? null,
       coverUrl: json.coverUrl ?? null,
@@ -50,11 +46,6 @@ export async function POST(req: NextRequest) {
       sourceDescription: json.sourceDescription ?? null,
     });
 
-    const status: SongStatus = parsed.publish
-      ? SongStatus.PUBLISHED
-      : SongStatus.DRAFT;
-
-    // Create song + connect producers (connectOrCreate by name)
     const created = await prisma.song.create({
       data: {
         title: parsed.title,
@@ -64,7 +55,7 @@ export async function POST(req: NextRequest) {
         coverUrl: parsed.coverUrl ?? undefined,
 
         audioPath: parsed.audioPath,
-        status: status,
+        status: SongStatus.DRAFT, // forced
 
         sourceName: parsed.sourceName,
         sourceUrl: parsed.sourceUrl,
@@ -76,10 +67,7 @@ export async function POST(req: NextRequest) {
         producers: {
           create: parsed.producers.map((name) => ({
             producer: {
-              connectOrCreate: {
-                where: { name },
-                create: { name },
-              },
+              connectOrCreate: { where: { name }, create: { name } },
             },
           })),
         },
@@ -89,11 +77,10 @@ export async function POST(req: NextRequest) {
 
     return Response.json({ id: created.id }, { status: 201 });
   } catch (err: unknown) {
-    console.error("[API] | Error creating song:", err);
     if (err instanceof z.ZodError) {
       return new Response(JSON.stringify(err.issues, null, 2), { status: 400 });
     }
-    const message = err instanceof Error ? err.message : "Server error";
-    return new Response(message, { status: 500 });
+    const msg = err instanceof Error ? err.message : "Server error";
+    return new Response(msg, { status: 500 });
   }
 }

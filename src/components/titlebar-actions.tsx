@@ -37,7 +37,7 @@ export function TitlebarActions({ links }: { links?: ActionLink[] }) {
 
   return (
     <div className="relative flex items-center">
-      {/* Desktop: sliding rail of links */}
+      {/* Desktop */}
       <div className="hidden sm:flex items-center">
         <AnimatePresence initial={false}>
           {open ? (
@@ -83,7 +83,7 @@ export function TitlebarActions({ links }: { links?: ActionLink[] }) {
         </AnimatePresence>
       </div>
 
-      {/* Mobile: fullscreen menu overlay */}
+      {/* Mobile - fullscreen menu overlay */}
       <AnimatePresence initial={false}>
         {open ? (
           <motion.div
@@ -148,10 +148,11 @@ export function TitlebarActions({ links }: { links?: ActionLink[] }) {
         aria-label={open ? "Close menu" : "Open menu"}
         onClick={() => setOpen((v) => !v)}
         className={clsx(
-          "relative z-[70]", // above overlay panel
           "p-1",
-          "cursor-pointer",
           "rounded-md",
+          "touch-hitbox",
+          "relative z-[70]", // above overlay panel
+          "cursor-pointer",
         )}
         initial={false}
         animate={{ rotate: open ? 45 : 0, translateY: open ? "0px" : " 0" }}

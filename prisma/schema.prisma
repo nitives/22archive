@@ -16,6 +16,7 @@ datasource db {
 enum Role {
   ADMIN
   TRUSTED
+  PENDING 
 }
 
 enum SongStatus {
@@ -37,7 +38,7 @@ model Profile {
   /// This should match Supabase auth.users.id (UUID)
   userId    String   @id @db.Uuid
   email     String?  @unique
-  role      Role     @default(TRUSTED)
+  role      Role     @default(PENDING)
   createdAt DateTime @default(now())
 
   songs Song[] @relation("SongsCreatedBy")

@@ -12,8 +12,8 @@ export function Song({ song }: { song: SongType }) {
   const [open, setOpen] = useState(false);
   const audio = useAudio();
   const track = toTrack(song);
-  const isCurrent = audio.state.current?.id === song.id;
-  const isPlaying = isCurrent && audio.state.isPlaying;
+  // const isCurrent = audio.state.current?.id === song.id;
+  // const isPlaying = isCurrent && audio.state.isPlaying;
 
   return (
     <div className="w-full border-t border-black/15 dark:border-white/10">

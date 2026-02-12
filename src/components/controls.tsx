@@ -1,8 +1,8 @@
 "use client";
 import { useAudio } from "@/features/audio/audio-provider";
 import clsx from "clsx";
-import { CSSProperties, useMemo } from "react";
-import { ImPause2, ImPlay2, ImPlay3 } from "react-icons/im";
+// import { useMemo } from "react";
+import { ImPause2, ImPlay3 } from "react-icons/im";
 
 function fmtTime(sec: number) {
   if (!Number.isFinite(sec) || sec < 0) return "--:--";
@@ -15,16 +15,21 @@ function fmtTime(sec: number) {
 export const Controls = () => {
   const audio = useAudio();
   const { current, isPlaying, currentTime, duration } = audio.state;
-  const progress = useMemo(() => {
-    if (!duration) return 0;
-    return Math.min(1, Math.max(0, currentTime / duration));
-  }, [currentTime, duration]);
+  // const progress = useMemo(() => {
+  //   if (!duration) return 0;
+  //   return Math.min(1, Math.max(0, currentTime / duration));
+  // }, [currentTime, duration]);
 
   const disabled = !current;
 
   const value = Math.min(currentTime, duration || 0);
   const max = duration || 0;
   const pct = max > 0 ? (value / max) * 100 : 0;
+
+  // Only show Controls on main page
+  if (typeof window !== "undefined" && window.location.pathname !== "/") {
+    return null;
+  }
 
   return (
     <div

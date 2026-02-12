@@ -8,7 +8,7 @@ export default async function Home() {
     <div
       className={clsx(
         "flex flex-col items-center justify-start",
-        "min-h-[calc(100dvh-var(--titlebar-height))] mt-[var(--titlebar-height)]",
+        "min-h-[calc(100dvh-var(--titlebar-height))] mt-[var(--titlebar-height)] mb-[15dvh]",
       )}
     >
       <SongList songs={songs} />

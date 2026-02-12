@@ -1,7 +1,6 @@
 import { APP } from "@/conf/constants";
 import { clsx } from "clsx";
 import Link from "next/link";
-import { BiPlusMedical } from "react-icons/bi";
 import { TitlebarActions } from "./titlebar-actions";
 
 export const Titlebar = () => {
@@ -17,7 +16,6 @@ export const Titlebar = () => {
       <Link href="/">
         <h1 className="select-none">{APP.NAME}</h1>
       </Link>
-      {/* <BiPlusMedical /> */}
       <TitlebarActions />
     </nav>
   );
