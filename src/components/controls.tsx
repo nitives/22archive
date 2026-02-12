@@ -77,7 +77,7 @@ export const Controls = () => {
           <input
             className={clsx(
               "range range--progress",
-              "w-[240px] max-w-[60vw]",
+              "max-sm:w-[180px] w-[240px] max-w-[60vw]",
               disabled && "opacity-40",
             )}
             type="range"
@@ -101,7 +101,7 @@ export const Controls = () => {
               "text-[#4c4c4c]",
               "cursor-pointer",
               "touch-hitbox",
-              "disabled:opacity-50",
+              "disabled:opacity-25",
             )}
           >
             {isPlaying ? <ImPause2 size={24} /> : <ImPlay3 size={24} />}
@@ -109,26 +109,28 @@ export const Controls = () => {
         </div>
       </div>
 
+      {/* Desktop: Play/Pause*/}
+      <button
+        type="button"
+        disabled={disabled}
+        onClick={() => audio.toggle()}
+        className={clsx(
+          "p-1",
+          "touch-hitbox",
+          "text-[#4c4c4c]",
+          "cursor-pointer",
+          "max-sm:hidden block",
+          "disabled:opacity-25",
+        )}
+      >
+        {isPlaying ? <ImPause2 size={24} /> : <ImPlay3 size={24} />}
+      </button>
+
       {/* Right: controls + time */}
       <div className="flex items-center gap-3">
         <div className="text-xs tabular-nums opacity-70 select-none">
           {fmtTime(currentTime)} / {fmtTime(duration)}
         </div>
-
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={() => audio.toggle()}
-          className={clsx(
-            "px-3 py-1",
-            "cursor-pointer",
-            "max-sm:hidden block",
-            "border border-black/25 dark:border-white/25",
-            "disabled:opacity-50",
-          )}
-        >
-          {isPlaying ? "Pause" : "Play"}
-        </button>
       </div>
     </div>
   );
