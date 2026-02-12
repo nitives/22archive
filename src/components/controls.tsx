@@ -1,6 +1,7 @@
 "use client";
 import { useAudio } from "@/features/audio/audio-provider";
 import clsx from "clsx";
+import { usePathname } from "next/navigation";
 import type { CSSProperties } from "react";
 // import { useMemo } from "react";
 import { ImPause2, ImPlay3 } from "react-icons/im";
@@ -14,12 +15,15 @@ function fmtTime(sec: number) {
 }
 
 export const Controls = () => {
+  const pathname = usePathname();
   const audio = useAudio();
   const { current, isPlaying, currentTime, duration } = audio.state;
   // const progress = useMemo(() => {
   //   if (!duration) return 0;
   //   return Math.min(1, Math.max(0, currentTime / duration));
   // }, [currentTime, duration]);
+
+  if (pathname !== "/") return null;
 
   const disabled = !current;
 
@@ -29,11 +33,6 @@ export const Controls = () => {
   const rangeStyle: CSSProperties & Record<"--range-pct", string> = {
     "--range-pct": `${pct}%`,
   };
-
-  // Only show Controls on main page
-  if (window && window.location.pathname !== "/") {
-    return null;
-  }
 
   return (
     <div
