@@ -1,12 +1,12 @@
-import { env } from "@/conf/env";
+import { serverEnv } from "@/conf/env/server";
 
 export function getSiteUrl() {
-  const manual = env.siteUrl.trim();
+  const manual = serverEnv.siteUrl.trim();
   if (manual) return manual.replace(/\/+$/, "");
-  const prod = env.vercelProjectProductionUrl.trim();
+  const prod = serverEnv.vercelProjectProductionUrl.trim();
   if (prod) return `https://${prod.replace(/\/+$/, "")}`;
 
-  const vercel = env.vercelUrl.trim();
+  const vercel = serverEnv.vercelUrl.trim();
   if (vercel) return `https://${vercel.replace(/\/+$/, "")}`;
   return "http://localhost:3000";
 }

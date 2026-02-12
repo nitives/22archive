@@ -31,7 +31,7 @@ export const Controls = () => {
   };
 
   // Only show Controls on main page
-  if (typeof window !== "undefined" && window.location.pathname !== "/") {
+  if (window && window.location.pathname !== "/") {
     return null;
   }
 

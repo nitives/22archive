@@ -1,6 +1,5 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
-// import { env, requireEnv } from "@/conf/env";
 import { requireServerEnv, serverEnv } from "@/conf/env/server";
 
 const url = requireServerEnv(serverEnv.supabaseUrl, "SUPABASE_URL");
