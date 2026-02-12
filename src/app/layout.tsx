@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono } from "next/font/google";
 import { APP, SEO } from "@/conf/constants";
+import { serverEnv } from "@/conf/env/server";
 import { Titlebar } from "@/components/title-bar";
 import "./globals.css";
 import { AudioProvider } from "@/features/audio/audio-provider";
@@ -59,7 +60,7 @@ export default function RootLayout({
         <AudioProvider>
           <Titlebar />
           {children}
-          <Controls />
+          <Controls maintenanceMode={serverEnv.maintenanceMode} />
         </AudioProvider>
       </body>
     </html>

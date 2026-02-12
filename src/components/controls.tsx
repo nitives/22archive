@@ -14,7 +14,11 @@ function fmtTime(sec: number) {
   return `${m}:${String(r).padStart(2, "0")}`;
 }
 
-export const Controls = () => {
+type ControlsProps = {
+  maintenanceMode?: boolean;
+};
+
+export const Controls = ({ maintenanceMode = false }: ControlsProps) => {
   const pathname = usePathname();
   const audio = useAudio();
   const { current, isPlaying, currentTime, duration } = audio.state;
@@ -23,7 +27,7 @@ export const Controls = () => {
   //   return Math.min(1, Math.max(0, currentTime / duration));
   // }, [currentTime, duration]);
 
-  if (pathname !== "/") return null;
+  if (maintenanceMode || pathname !== "/") return null;
 
   const disabled = !current;
 
