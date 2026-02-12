@@ -5,8 +5,11 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider               = "prisma-client"
+  output                 = "../src/generated/prisma"
+  moduleFormat           = "esm"
+  generatedFileExtension = "ts"
+  importFileExtension    = "ts"
 }
 
 datasource db {
@@ -16,7 +19,7 @@ datasource db {
 enum Role {
   ADMIN
   TRUSTED
-  PENDING 
+  PENDING
 }
 
 enum SongStatus {
@@ -47,11 +50,11 @@ model Profile {
 }
 
 model Song {
-  id        String     @id @default(uuid()) @db.Uuid
-  title     String
-  artist    String
-  era       String?
-  year      Int?
+  id     String  @id @default(uuid()) @db.Uuid
+  title  String
+  artist String
+  era    String?
+  year   Int?
 
   coverUrl  String?
   /// Supabase Storage object key, e.g. "<userId>/<slug>.mp3"
@@ -79,16 +82,17 @@ model Song {
   @@index([createdByUserId])
   @@map("songs")
 }
+
 model Producer {
-  id         String  @id @default(uuid()) @db.Uuid
-  name       String  @unique
+  id   String @id @default(uuid()) @db.Uuid
+  name String @unique
 
   /// socials (optional fields)
   twitter    String?
   instagram  String?
   soundcloud String?
 
-  songs      SongProducer[]
+  songs SongProducer[]
 
   createdAt DateTime @default(now())
 
@@ -96,11 +100,11 @@ model Producer {
 }
 
 model SongProducer {
-  songId     String   @db.Uuid
-  producerId String   @db.Uuid
+  songId     String @db.Uuid
+  producerId String @db.Uuid
 
-  song      Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
-  producer  Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  song     Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
+  producer Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
 
   @@id([songId, producerId])
   @@index([producerId])
